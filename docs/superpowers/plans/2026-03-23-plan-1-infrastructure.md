@@ -1017,25 +1017,15 @@ Two containers are needed — one to serve the ACME challenge on port 80, and th
 # 5a: Create cert directories
 mkdir -p ./nginx/certbot/conf ./nginx/certbot/www
 
-# 5b: Start a temporary nginx to serve the ACME challenge on port 80
-docker run -d --name tmp-nginx \
-  -v $(pwd)/nginx/certbot/www:/var/www/certbot \
-  -p 80:80 \
-  nginx:alpine \
-  sh -c "nginx -g 'daemon off;'"
-
-# 5c: Request the certificate (replace values from your .env)
+# 5b: Request the certificate using standalone mode
+# (certbot binds port 80 directly — no separate nginx needed)
 docker run --rm \
   -v $(pwd)/nginx/certbot/conf:/etc/letsencrypt \
-  -v $(pwd)/nginx/certbot/www:/var/www/certbot \
-  certbot/certbot certonly --webroot \
-  -w /var/www/certbot \
+  -p 80:80 \
+  certbot/certbot certonly --standalone \
   -d YOUR_DOMAIN \
   --email YOUR_CERTBOT_EMAIL \
   --agree-tos --no-eff-email
-
-# 5d: Stop and remove temporary nginx
-docker stop tmp-nginx && docker rm tmp-nginx
 ```
 
 Expected output from certbot: `Successfully received certificate.`
@@ -1097,7 +1087,8 @@ Add these two lines to the crontab:
 0 2 * * * docker exec $(docker compose -f /root/appointment-chatbot/docker-compose.yml ps -q postgres) pg_dump -U chatbot chatbot_db | gzip > /root/backups/chatbot_$(date +\%Y\%m\%d).sql.gz && s3cmd put /root/backups/chatbot_$(date +\%Y\%m\%d).sql.gz s3://chatbot-backups/ && find /root/backups -mtime +7 -delete >> /root/backups/backup.log 2>&1
 
 # Weekly n8n workflow export at 03:00 Sunday
-0 3 * * 0 docker exec $(docker compose -f /root/appointment-chatbot/docker-compose.yml ps -q n8n) n8n export:workflow --all --output=/home/node/.n8n/workflows_backup.json && s3cmd put /root/backups/workflows_$(date +\%Y\%m\%d).json s3://chatbot-backups/ >> /root/backups/backup.log 2>&1
+# Export inside container → docker cp to host → upload to Object Storage
+0 3 * * 0 N8N=$(docker compose -f /root/appointment-chatbot/docker-compose.yml ps -q n8n) && docker exec $N8N n8n export:workflow --all --output=/home/node/.n8n/workflows_backup.json && docker cp $N8N:/home/node/.n8n/workflows_backup.json /root/backups/workflows_$(date +\%Y\%m\%d).json && s3cmd put /root/backups/workflows_$(date +\%Y\%m\%d).json s3://chatbot-backups/ >> /root/backups/backup.log 2>&1
 ```
 
 Verify first backup runs correctly:
