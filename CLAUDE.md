@@ -101,6 +101,21 @@ From experience with this repository:
 - Use browser automation MCPs (Claude in Chrome, Playwright, Chrome DevTools) for Claude to inspect console logs
 - Provide screenshots when reporting visual issues
 
+## Active Projects
+
+### Appointment Chatbot SaaS
+When working on the appointment chatbot project, **always read these files first** (in order):
+
+1. `C:\Users\merve\OneDrive\Belgeler\GitHub\appointment-chatbot\.planning\STATE.md` — current phase + next action
+2. `C:\Users\merve\OneDrive\Belgeler\GitHub\appointment-chatbot\.planning\ROADMAP.md` — 7-phase build sequence
+3. `C:\Users\merve\OneDrive\Belgeler\GitHub\appointment-chatbot\.planning\PROJECT.md` — full context, decisions, risks
+
+**PostgreSQL MCP** is connected to `chatbot_db` on `localhost:5432` (user: `chatbot`). Custom chatbot tables are lowercase; Cal.com tables are PascalCase (treat as read-only).
+
+**GSD workflow:** `/gsd:plan-phase <N>` to plan, `/gsd:execute-phase <N>` to execute, `/gsd:progress` to check status.
+
+Design spec: `docs/superpowers/specs/2026-03-23-appointment-chatbot-design.md`
+
 ## Documentation
 
 See `.claude/rules/markdown-docs.md` for documentation standards. Key docs:
