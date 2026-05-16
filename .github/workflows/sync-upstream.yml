@@ -23,8 +23,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/shanraisshan/claude-code-best-practice.git
           git fetch upstream
-          git merge upstream/main --no-edit --allow-unrelated-histories || {
-            echo "Merge conflict detected — skipping auto-sync. Resolve manually."
+          git merge upstream/main --no-edit --allow-unrelated-histories -X ours || {
+            echo "Merge failed — skipping auto-sync. Resolve manually."
             exit 1
           }
           git push origin main
